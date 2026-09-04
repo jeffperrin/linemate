@@ -1,4 +1,138 @@
 module Linemate
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  class Error < StandardError
+  end
+  class ConnectionNotEstablished < Error
+  end
+  class UnknownColumn < Error
+  end
+  class NotNullViolation < Error
+  end
+  class RecordNotFound < Error
+  end
+  class AssociationError < Error
+  end
+
+  def self.connect: (String path, **untyped options) -> singleton(Linemate)
+  def self.connection: () -> Connection
+  def self.connected?: () -> bool
+  def self.disconnect: () -> nil
+
+  class Connection
+    attr_reader pid: Integer
+    def initialize: (String path, **untyped options) -> void
+    def execute: (String sql, ?Array[untyped] binds) -> Array[Hash[String, untyped]]
+    def select_all: (String sql, ?Array[untyped] binds) -> Array[Hash[String, untyped]]
+    def select_one: (String sql, ?Array[untyped] binds) -> Hash[String, untyped]?
+    def select_rows: (String sql, ?Array[untyped] binds) -> Array[Array[untyped]]
+    def select_value: (String sql, ?Array[untyped] binds) -> untyped
+    def transaction: [T] () { () -> T } -> T
+    def close: () -> void
+    def closed?: () -> bool
+  end
+
+  interface _Type
+    def cast: (untyped value) -> untyped
+    def serialize: (untyped value) -> untyped
+    def deserialize: (untyped value) -> untyped
+    def sql_type: () -> String
+  end
+
+  class Column
+    attr_reader name: Symbol
+    attr_reader type: _Type
+    attr_reader default: untyped
+    def null?: () -> bool
+    def primary?: () -> bool
+    def sql_type: () -> String
+  end
+
+  class Reflection
+    attr_reader macro: Symbol
+    attr_reader name: Symbol
+    attr_reader owner: singleton(Model)
+    attr_reader foreign_key: Symbol
+    def klass: () -> singleton(Model)
+    def primary_key: () -> Symbol
+    def belongs_to?: () -> bool
+    def collection?: () -> bool
+  end
+
+  class Relation[Record < Model]
+    include Enumerable[Record]
+
+    def where: (?Hash[Symbol, untyped] | String conditions, *untyped binds) -> Relation[Record]
+    def order: (*Symbol | String | Hash[Symbol, Symbol]) -> Relation[Record]
+    def reorder: (*Symbol | String | Hash[Symbol, Symbol]) -> Relation[Record]
+    def reverse_order: () -> Relation[Record]
+    def limit: (Integer?) -> Relation[Record]
+    def offset: (Integer?) -> Relation[Record]
+    def select: (*Symbol | String) -> Relation[Record]
+    def unscope: (*Symbol) -> Relation[Record]
+
+    def to_a: () -> Array[Record]
+    def each: () { (Record) -> void } -> Array[Record]
+    def loaded?: () -> bool
+    def reload: () -> self
+    def first: (?Integer?) -> (Record | Array[Record] | nil)
+    def last: (?Integer?) -> (Record | Array[Record] | nil)
+    def find: (untyped id) -> Record
+    def find_by: (Hash[Symbol, untyped] | String conditions, *untyped binds) -> Record?
+    def exists?: () -> bool
+    def empty?: () -> bool
+    def size: () -> Integer
+    def count: () -> Integer
+    def sum: (Symbol | String) -> Numeric
+    def minimum: (Symbol | String) -> untyped
+    def maximum: (Symbol | String) -> untyped
+    def pluck: (*Symbol | String) -> Array[untyped]
+    def sql: () -> [String, Array[untyped]]
+    def to_sql: () -> String
+  end
+
+  class Model
+    def self.table: (?String? name) -> String
+    def self.table_name: (?String? name) -> String
+    def self.col: (Symbol name, _Type type, ?null: bool, ?default: untyped, ?primary: bool) -> Column
+    def self.columns: () -> Array[Column]
+    def self.column_names: () -> Array[Symbol]
+    def self.column: (Symbol | String name) -> Column
+    def self.column?: (Symbol | String name) -> bool
+    def self.primary_key: () -> Symbol?
+
+    def self.belongs_to: (singleton(Model) | String target, ?as: Symbol?, ?foreign_key: Symbol?, ?primary_key: Symbol?) -> void
+    def self.has_many: (Symbol name, singleton(Model) | String target, ?foreign_key: Symbol?, ?primary_key: Symbol?) -> void
+    def self.has_one: (Symbol name, singleton(Model) | String target, ?foreign_key: Symbol?, ?primary_key: Symbol?) -> void
+    def self.reflections: () -> Hash[Symbol, Reflection]
+    def self.reflect_on_association: (Symbol | String name) -> Reflection?
+
+    def self.all: () -> Relation[instance]
+    def self.where: (?Hash[Symbol, untyped] | String conditions, *untyped binds) -> Relation[instance]
+    def self.order: (*Symbol | String | Hash[Symbol, Symbol]) -> Relation[instance]
+    def self.limit: (Integer?) -> Relation[instance]
+    def self.offset: (Integer?) -> Relation[instance]
+    def self.select: (*Symbol | String) -> Relation[instance]
+    def self.find: (untyped id) -> instance
+    def self.find_by: (Hash[Symbol, untyped] | String conditions, *untyped binds) -> instance?
+    def self.first: (?Integer?) -> (instance | Array[instance] | nil)
+    def self.last: (?Integer?) -> (instance | Array[instance] | nil)
+    def self.exists?: () -> bool
+    def self.count: () -> Integer
+    def self.pluck: (*Symbol | String) -> Array[untyped]
+    def self.instantiate: (Hash[String | Symbol, untyped] row) -> instance
+    def self.connection: () -> Connection
+
+    def initialize: (?Hash[Symbol | String, untyped] attributes) -> void
+    def read_attribute: (Symbol | String name) -> untyped
+    def []: (Symbol | String name) -> untyped
+    def write_attribute: (Symbol | String name, untyped value) -> untyped
+    def []=: (Symbol | String name, untyped value) -> untyped
+    def attributes: () -> Hash[Symbol, untyped]
+    def attribute_names: () -> Array[Symbol]
+    def id: () -> untyped
+    def persisted?: () -> bool
+    def new_record?: () -> bool
+    def reload_associations: () -> self
+  end
 end
