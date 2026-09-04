@@ -2,11 +2,16 @@
 
 require_relative "inflector"
 require_relative "column"
+require_relative "types"
+require_relative "attributes"
 
 module Linemate
   # Base class for mapped records. Subclasses declare their columns with
   # +col+ and, optionally, their table with +table+.
   class Model
+    include Types
+    include Attributes
+
     class << self
       # Returns or sets the table name. Defaults to the pluralised,
       # underscored class name: Team => "teams", HomeGame => "home_games".
@@ -30,7 +35,7 @@ module Linemate
 
         column = Column.new(name, type, null: null, default: default, primary: primary)
         columns_hash[name] = column
-        define_attribute_methods(column) if respond_to?(:define_attribute_methods, true)
+        define_attribute_methods(column)
         column
       end
 
