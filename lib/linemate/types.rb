@@ -34,7 +34,7 @@ module Linemate
 
       def serialize(value) = cast(value)
 
-      def deserialize(value) = value.nil? ? nil : value.to_i
+      def deserialize(value) = value&.to_i
 
       def sql_type = "INTEGER"
     end
@@ -53,7 +53,7 @@ module Linemate
 
       def serialize(value) = cast(value)
 
-      def deserialize(value) = value.nil? ? nil : value.to_f
+      def deserialize(value) = value&.to_f
 
       def sql_type = "REAL"
     end
@@ -160,7 +160,11 @@ module Linemate
 
       def serialize(value) = ::JSON.generate(value)
 
-      def deserialize(value) = value.nil? ? nil : ::JSON.parse(value.to_s)
+      def deserialize(value)
+        return nil if value.nil?
+
+        ::JSON.parse(value.to_s)
+      end
 
       def sql_type = "TEXT"
     end
