@@ -39,7 +39,7 @@ class ModelTest < Minitest::Test
   def test_column_attributes
     c = Team.column(:motto)
     assert_equal :motto, c.name
-    assert_equal String, c.type
+    assert_same Linemate::Types::String, c.type
     assert c.null?
     refute c.primary?
 
@@ -88,8 +88,8 @@ class ModelTest < Minitest::Test
   end
 
   def test_column_inspect
-    assert_equal "#<Column id Integer>", Team.column(:id).inspect
+    assert_equal "#<Column id Int>", Team.column(:id).inspect
     assert_equal "#<Column motto String null>", Team.column(:motto).inspect
-    assert_equal "#<Column number Integer primary>", Player.column(:number).inspect
+    assert_equal "#<Column number Int primary>", Player.column(:number).inspect
   end
 end
