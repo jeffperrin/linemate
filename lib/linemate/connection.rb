@@ -28,6 +28,14 @@ module Linemate
       @database.execute(sql, binds).first
     end
 
+    # Rows as arrays rather than hashes, for pluck and friends.
+    def select_rows(sql, binds = [])
+      @database.results_as_hash = false
+      @database.execute(sql, binds)
+    ensure
+      @database.results_as_hash = true
+    end
+
     def select_value(sql, binds = [])
       row = @database.execute(sql, binds).first
       row&.values&.first

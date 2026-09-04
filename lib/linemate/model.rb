@@ -4,6 +4,7 @@ require_relative "inflector"
 require_relative "column"
 require_relative "types"
 require_relative "attributes"
+require_relative "querying"
 
 module Linemate
   # Base class for mapped records. Subclasses declare their columns with
@@ -11,6 +12,7 @@ module Linemate
   class Model
     include Types
     include Attributes
+    extend Querying
 
     class << self
       # Returns or sets the table name. Defaults to the pluralised,

@@ -57,6 +57,8 @@ class ConnectionTest < Minitest::Test
     assert_equal 2, conn.select_value("SELECT COUNT(*) FROM t")
     assert_equal({"id" => 1, "name" => "a"}, conn.select_one("SELECT * FROM t ORDER BY id"))
     assert_equal %w[a b], conn.select_all("SELECT name FROM t ORDER BY id").map { |r| r["name"] }
+    assert_equal [[1, "a"], [2, "b"]], conn.select_rows("SELECT id, name FROM t ORDER BY id")
+    assert_equal({"id" => 1, "name" => "a"}, conn.select_one("SELECT * FROM t ORDER BY id"))
   end
 
   def test_foreign_keys_enabled
