@@ -147,7 +147,7 @@ module Linemate
 
       def serialize(value) = SQLite3::Blob.new(cast(value))
 
-      def deserialize(value) = value.nil? ? nil : value.to_s.b
+      def deserialize(value) = value&.to_s&.b
 
       def sql_type = "BLOB"
     end
