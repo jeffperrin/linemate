@@ -35,6 +35,7 @@ class ConnectionTest < Minitest::Test
   def test_reopens_after_fork
     skip "fork not supported" unless Process.respond_to?(:fork)
     parent = Linemate.connection
+    SQLite3::ForkSafety.suppress_warnings!
     reader, writer = IO.pipe
     pid = fork do
       reader.close

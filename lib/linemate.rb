@@ -3,6 +3,7 @@
 require_relative "linemate/version"
 require_relative "linemate/errors"
 require_relative "linemate/connection"
+require_relative "linemate/model"
 
 module Linemate
   THREAD_KEY = :linemate_connection
