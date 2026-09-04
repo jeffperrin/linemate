@@ -31,7 +31,7 @@ module Linemate
       flags << "primary" if primary?
       flags << "null" if null?
       flags << "default=#{default.inspect}" unless default.nil?
-      "#<Column #{name} #{type_name}#{flags.empty? ? "" : " " + flags.join(" ")}>"
+      "#<Column #{name} #{type_name}#{" " + flags.join(" ") unless flags.empty?}>"
     end
 
     def type_name
