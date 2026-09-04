@@ -1,32 +1,44 @@
-name: Ruby
+name: CI
 
 on:
   push:
     branches:
       - main
-
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  test:
+    name: Test (Ruby ${{ matrix.ruby }})
     runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }}
     strategy:
+      fail-fast: false
       matrix:
         ruby:
-          - '3.4.2'
-
+          - "3.4"
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
-        run: bundle exec rake
+      - name: Run tests
+        run: bundle exec rake test
+
+  lint:
+    name: Lint (standardrb)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: Run standardrb
+        run: bundle exec standardrb --no-fix
