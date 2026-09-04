@@ -5,6 +5,7 @@ require_relative "column"
 require_relative "types"
 require_relative "attributes"
 require_relative "querying"
+require_relative "associations"
 
 module Linemate
   # Base class for mapped records. Subclasses declare their columns with
@@ -12,6 +13,7 @@ module Linemate
   class Model
     include Types
     include Attributes
+    include Associations
     extend Querying
 
     class << self
@@ -67,8 +69,8 @@ module Linemate
 
       def inherited(subclass)
         super
-        parent_columns = columns_hash
-        subclass.instance_variable_set(:@columns_hash, parent_columns.dup)
+        subclass.instance_variable_set(:@columns_hash, columns_hash.dup)
+        subclass.instance_variable_set(:@reflections, reflections.dup)
       end
     end
   end
