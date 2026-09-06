@@ -6,6 +6,7 @@ require_relative "types"
 require_relative "attributes"
 require_relative "querying"
 require_relative "associations"
+require_relative "persistence"
 
 module Linemate
   # Base class for mapped records. Subclasses declare their columns with
@@ -14,6 +15,7 @@ module Linemate
     include Types
     include Attributes
     include Associations
+    include Persistence
     extend Querying
 
     class << self
