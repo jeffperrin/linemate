@@ -5,18 +5,6 @@ require "time"
 require "json"
 
 module Linemate
-  # Column types. Each type responds to:
-  #
-  #   cast(value)        Ruby value => canonical Ruby value (on assignment)
-  #   serialize(value)   Ruby value => value SQLite stores
-  #   deserialize(value) value SQLite returned => Ruby value
-  #   sql_type           declared SQLite type for CREATE TABLE
-  #
-  # Any object with those four methods can be used as a column type.
-  #
-  # Model includes this module, so inside a model body +String+, +Date+ and
-  # friends refer to these types rather than the core classes. Use
-  # +::String+ there if you need the core class.
   module Types
     module Int
       extend self
@@ -115,7 +103,6 @@ module Linemate
       def sql_type = "TEXT"
     end
 
-    # Stored as UTC ISO 8601 text; always returns a Time in UTC.
     module DateTime
       extend self
 
@@ -152,7 +139,6 @@ module Linemate
       def sql_type = "BLOB"
     end
 
-    # Any JSON-serialisable value, stored as TEXT.
     module JSON
       extend self
 

@@ -4,7 +4,6 @@ require "forwardable"
 require_relative "relation"
 
 module Linemate
-  # Class-level query API. Every method starts a fresh Relation via +all+.
   module Querying
     extend Forwardable
 

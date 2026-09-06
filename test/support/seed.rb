@@ -30,11 +30,10 @@ module Hockey
     INSERT INTO games VALUES (4, '2024-10-20T01:00:00.000000Z', 5, 3, 6, 3, 0);
   SQL
 
-  def self.seed(connection = Linemate.connection)
-    connection.database.execute_batch(SEED)
+  def self.seed
+    Linemate.connection.database.execute_batch(SEED)
   end
 
-  # Fresh in-memory database with schema and seed loaded.
   def self.setup!
     Linemate.connect(":memory:")
     create_schema

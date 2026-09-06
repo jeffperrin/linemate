@@ -10,8 +10,6 @@ require_relative "persistence"
 require_relative "schema"
 
 module Linemate
-  # Base class for mapped records. Subclasses declare their columns with
-  # +col+ and, optionally, their table with +table+.
   class Model
     include Types
     include Attributes
@@ -21,22 +19,12 @@ module Linemate
     extend Schema
 
     class << self
-      # Returns or sets the table name. Defaults to the pluralised,
-      # underscored class name: Team => "teams", HomeGame => "home_games".
       def table(name = nil)
         @table = name.to_s if name
         @table ||= Inflector.tableize(self.name)
       end
       alias_method :table_name, :table
 
-      # Declares an attribute.
-      #
-      #   col :id, Int
-      #   col :name, String
-      #   col :born_on, Date, null: true
-      #
-      # A column named :id is the primary key unless another column is
-      # declared with primary: true.
       def col(name, type, null: false, default: nil, primary: false)
         name = name.to_sym
         raise ArgumentError, "column #{name} already declared on #{self}" if columns_hash.key?(name)

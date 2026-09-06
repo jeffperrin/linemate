@@ -3,13 +3,6 @@
 require_relative "reflection"
 
 module Linemate
-  # Read-only associations. The target class is passed directly, in the
-  # same spirit as +col+:
-  #
-  #   belongs_to League                     # reader :league, key :league_id
-  #   belongs_to Team, as: :home_team       # reader :home_team, key :home_team_id
-  #   has_many :players, "Player"           # string resolved on first use
-  #   has_one :captain, "Player", foreign_key: :captain_of_team_id
   module Associations
     module ClassMethods
       def belongs_to(target, as: nil, foreign_key: nil, primary_key: nil)
@@ -78,10 +71,8 @@ module Linemate
         reflections[reflection.name] = reflection
       end
 
-      # The reader caches its result per instance; +reload_associations+
-      # clears the cache.
       def define_association_reader(name, &loader)
-        attribute_methods_module.module_eval do
+        overridable_methods.module_eval do
           define_method(name) do
             cache = (@association_cache ||= {})
             return cache[name] if cache.key?(name)

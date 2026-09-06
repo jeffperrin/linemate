@@ -2,7 +2,6 @@
 
 require "test_helper"
 
-# Walks the full target API from PLAN.md against the hockey fixtures.
 class HockeyIntegrationTest < Minitest::Test
   include Hockey
 

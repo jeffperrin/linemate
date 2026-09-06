@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# The hockey league domain used by the integration tests. Mirrors the target
-# API in PLAN.md.
 module Hockey
   class League < Linemate::Model
     col :id, Int
