@@ -2,6 +2,7 @@
 
 require_relative "linemate/version"
 require_relative "linemate/errors"
+require_relative "linemate/instrumentation"
 require_relative "linemate/connection"
 require_relative "linemate/model"
 

@@ -15,26 +15,26 @@ module Linemate
     end
 
     def execute(sql, binds = [])
-      @database.execute(sql, binds)
+      run(sql, binds)
     end
 
     def select_all(sql, binds = [])
-      @database.execute(sql, binds)
+      run(sql, binds)
     end
 
     def select_one(sql, binds = [])
-      @database.execute(sql, binds).first
+      run(sql, binds).first
     end
 
     def select_rows(sql, binds = [])
       @database.results_as_hash = false
-      @database.execute(sql, binds)
+      run(sql, binds)
     ensure
       @database.results_as_hash = true
     end
 
     def select_value(sql, binds = [])
-      row = @database.execute(sql, binds).first
+      row = run(sql, binds).first
       row&.values&.first
     end
 
@@ -52,6 +52,12 @@ module Linemate
 
     def closed?
       @database.closed?
+    end
+
+    private
+
+    def run(sql, binds)
+      Linemate.instrument(:sql, sql, binds) { @database.execute(sql, binds) }
     end
   end
 end

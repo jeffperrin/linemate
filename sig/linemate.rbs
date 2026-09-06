@@ -19,6 +19,19 @@ module Linemate
   def self.connected?: () -> bool
   def self.disconnect: () -> nil
 
+  class Event
+    attr_reader name: Symbol
+    attr_reader sql: String
+    attr_reader binds: Array[untyped]
+    attr_reader duration: Float
+    attr_reader error: Exception?
+    def duration_ms: () -> Float
+  end
+
+  def self.subscribe: (?Symbol? name) { (Event) -> void } -> untyped
+  def self.unsubscribe: (untyped subscription) -> nil
+  def self.logger=: (Logger? logger) -> void
+
   class Connection
     attr_reader pid: Integer
     def initialize: (String path, **untyped options) -> void
