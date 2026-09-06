@@ -51,7 +51,9 @@ module Linemate
       spawn(offset: value && Integer(value))
     end
 
-    def select(*columns)
+    def select(*columns, &block)
+      return to_a.select(&block) if block && columns.empty?
+
       spawn(select: select_values + columns.map { |c| column_or_raw(c) })
     end
 
@@ -111,7 +113,9 @@ module Linemate
       count ? rel.limit(count).to_a.reverse : rel.limit(1).to_a.first
     end
 
-    def find(id)
+    def find(id = nil, &block)
+      return to_a.find(&block) if block && id.nil?
+
       pk = primary_key!
       where(pk => id).first ||
         raise(RecordNotFound, "Couldn't find #{model} with #{pk}=#{id.inspect}")
@@ -168,6 +172,16 @@ module Linemate
 
     def inspect
       "#<#{self.class.name} #{model} #{to_sql}>"
+    end
+
+    def respond_to_missing?(name, include_private = false)
+      model.respond_to?(name) || super
+    end
+
+    def method_missing(name, *args, **kwargs, &block)
+      return super unless model.respond_to?(name)
+
+      model.scoping(self) { model.public_send(name, *args, **kwargs, &block) }
     end
 
     protected

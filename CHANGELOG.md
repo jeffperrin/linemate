@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Class-level scopes chain off relations: `Team.where(...).active`.
+- `Relation#find` and `Relation#select` with a block behave like Enumerable.
+
 - Connection layer: global configuration, one SQLite handle per thread, reopened after fork, with WAL, busy timeout and foreign keys enabled.
 - `Linemate::Model` with `col` declarations, `table` override and a hand-rolled inflector.
 - Column types `Int`, `Float`, `String`, `Boolean`, `Date`, `DateTime`, `Blob`, `JSON`; custom types via `cast`/`serialize`/`deserialize`/`sql_type`.
