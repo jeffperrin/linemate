@@ -199,3 +199,54 @@ class RelationTest < Minitest::Test
     assert_match(/#<Linemate::Relation RelationTest::Player SELECT/, rel.inspect)
   end
 end
+
+class RelationEdgeCasesTest < Minitest::Test
+  class Note < Linemate::Model
+    col :id, Int
+    col :body, String
+  end
+
+  class Log < Linemate::Model
+    col :message, String
+  end
+
+  def setup
+    Linemate.connect(":memory:")
+    Note.create_table
+    Log.create_table
+    Linemate.connection.execute("INSERT INTO notes (body) VALUES ('a'), ('b')")
+    Linemate.connection.execute("INSERT INTO logs (message) VALUES ('x'), ('y')")
+  end
+
+  def teardown
+    Linemate.disconnect
+  end
+
+  def test_unscope_where
+    assert_equal 2, Note.where(body: "a").unscope(:where).count
+  end
+
+  def test_empty_when_loaded
+    rel = Note.where(body: "zzz")
+    rel.to_a
+    assert rel.empty?
+    loaded = Note.all.tap(&:to_a)
+    refute loaded.empty?
+  end
+
+  def test_first_without_primary_key_keeps_insertion_order
+    assert_equal "x", Log.first.message
+    assert_raises(Linemate::Error) { Log.find(1) }
+  end
+
+  def test_rejects_non_column_arguments
+    assert_raises(ArgumentError) { Note.select(42) }
+    assert_raises(ArgumentError) { Note.order(42) }
+    assert_raises(ArgumentError) { Note.where({body: "a"}, 1) }
+  end
+
+  def test_exclusive_endless_range
+    assert_equal ['"id" < ?', [2]], Note.where(id: ...2).where_clauses.first
+    assert_equal ["a"], Note.where(id: ...2).pluck(:body)
+  end
+end

@@ -56,10 +56,7 @@ module Linemate
       return word if UNCOUNTABLES.include?(word.downcase)
       return IRREGULARS[word] if IRREGULARS.key?(word)
 
-      PLURAL_RULES.each do |rule, replacement|
-        return word.sub(rule, replacement) if word.match?(rule)
-      end
-      word
+      apply(PLURAL_RULES, word)
     end
 
     def singularize(word)
@@ -67,10 +64,7 @@ module Linemate
       return word if UNCOUNTABLES.include?(word.downcase)
       return IRREGULARS.key(word) if IRREGULARS.value?(word)
 
-      SINGULAR_RULES.each do |rule, replacement|
-        return word.sub(rule, replacement) if word.match?(rule)
-      end
-      word
+      apply(SINGULAR_RULES, word)
     end
 
     # "HomeGame" => "home_game", "Linemate::Team" => "team"
@@ -91,6 +85,11 @@ module Linemate
     # "HomeGame" => "home_games"
     def tableize(class_name)
       pluralize(underscore(class_name))
+    end
+
+    def apply(rules, word)
+      rule, replacement = rules.find { |pattern, _| word.match?(pattern) }
+      rule ? word.sub(rule, replacement) : word
     end
   end
 end

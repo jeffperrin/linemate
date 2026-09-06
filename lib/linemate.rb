@@ -39,7 +39,7 @@ module Linemate
     # own handles and must call this themselves.
     def disconnect
       conn = Thread.current.thread_variable_get(THREAD_KEY)
-      conn&.close if conn && conn.pid == Process.pid
+      conn.close if conn&.pid == Process.pid
       Thread.current.thread_variable_set(THREAD_KEY, nil)
       nil
     end

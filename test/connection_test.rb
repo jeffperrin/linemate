@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "tmpdir"
 
 class ConnectionTest < Minitest::Test
   def setup
@@ -82,5 +83,52 @@ class ConnectionTest < Minitest::Test
     Linemate.disconnect
     assert conn.closed?
     refute_same conn, Linemate.connection
+  end
+end
+
+class ConnectionEdgeCasesTest < Minitest::Test
+  def teardown
+    Linemate.disconnect
+  end
+
+  def test_file_database_uses_wal
+    Dir.mktmpdir do |dir|
+      Linemate.connect(File.join(dir, "league.sqlite3"))
+      assert_equal "wal", Linemate.connection.select_value("PRAGMA journal_mode")
+    end
+  end
+
+  def test_close_is_idempotent
+    Linemate.connect(":memory:")
+    conn = Linemate.connection
+    conn.close
+    conn.close
+    assert conn.closed?
+  end
+
+  def test_disconnect_in_forked_child_leaves_parent_handle_open
+    skip "fork not supported" unless Process.respond_to?(:fork)
+    Linemate.connect(":memory:")
+    parent = Linemate.connection
+    SQLite3::ForkSafety.suppress_warnings!
+    pid = fork do
+      Linemate.disconnect
+      exit!(0)
+    end
+    Process.wait(pid)
+    refute parent.closed?
+  end
+
+  def test_connected
+    Linemate.instance_variable_set(:@config, nil)
+    refute Linemate.connected?
+    Linemate.connect(":memory:")
+    assert Linemate.connected?
+  end
+
+  def test_disconnect_without_connection_is_a_noop
+    Linemate.connect(":memory:")
+    assert_nil Linemate.disconnect
+    assert_nil Linemate.disconnect
   end
 end

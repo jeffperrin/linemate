@@ -20,7 +20,7 @@ class InflectorTest < Minitest::Test
       "teams" => "team", "matches" => "match", "buses" => "bus",
       "penalties" => "penalty", "series" => "series", "people" => "person",
       "leaves" => "leaf", "statuses" => "status", "analyses" => "analysis",
-      "games" => "game"
+      "games" => "game", "box" => "box"
     }.each { |p, s| assert_equal s, I.singularize(p), p }
   end
 
