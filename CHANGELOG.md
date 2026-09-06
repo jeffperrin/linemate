@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Dirty tracking: `changed?`, `changes`, `saved_changes`, `name_changed?`, `name_was`; updates write only changed columns.
+- Callbacks: before/after save, create, update and destroy; `throw :abort` halts.
 - Class-level scopes chain off relations: `Team.where(...).active`.
 - `Relation#find` and `Relation#select` with a block behave like Enumerable.
 
