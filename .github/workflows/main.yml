@@ -42,3 +42,25 @@ jobs:
           bundler-cache: true
       - name: Run standardrb
         run: bundle exec standardrb --no-fix
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: Run tests with coverage
+        run: bundle exec rake test
+        env:
+          COVERAGE: "1"
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
