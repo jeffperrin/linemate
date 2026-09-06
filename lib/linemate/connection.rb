@@ -41,6 +41,10 @@ module Linemate
       row&.values&.first
     end
 
+    def last_insert_row_id
+      @database.last_insert_row_id
+    end
+
     def transaction(&block)
       @database.transaction(&block)
     end

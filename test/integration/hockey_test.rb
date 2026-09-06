@@ -143,4 +143,22 @@ class HockeyIntegrationTest < Minitest::Test
     assert_empty rel.to_a
     assert_equal 10, Player.count
   end
+
+  def test_create_update_destroy_round_trip
+    leafs = Team.find(1)
+    rookie = Player.create(name: "Easton Cowan", position: "LW", team_id: leafs.id, born_on: Date.new(2005, 5, 20))
+    assert_equal 4, leafs.players.reload.count
+    assert_equal "Maple Leafs", rookie.team.name
+
+    rookie.update(goals: 1, assists: 2)
+    assert_equal 3, Player.find(rookie.id).points
+
+    rookie.destroy
+    assert_equal 10, Player.count
+    assert_nil Player.find_by(name: "Easton Cowan")
+  end
+
+  def test_foreign_keys_are_enforced
+    assert_raises(SQLite3::ConstraintException) { Player.create(name: "Ghost", position: "G", team_id: 999) }
+  end
 end
