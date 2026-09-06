@@ -8,7 +8,19 @@ module Linemate
     extend Forwardable
 
     def all
-      Relation.new(self)
+      current_scope || Relation.new(self)
+    end
+
+    def scoping(relation)
+      previous = current_scope
+      current_scopes[self] = relation
+      yield
+    ensure
+      current_scopes[self] = previous
+    end
+
+    def current_scope
+      current_scopes[self]
     end
 
     def_delegators :all,
@@ -18,6 +30,13 @@ module Linemate
 
     def connection
       Linemate.connection
+    end
+
+    private
+
+    def current_scopes
+      Thread.current.thread_variable_get(:linemate_scopes) ||
+        Thread.current.thread_variable_set(:linemate_scopes, {})
     end
   end
 end

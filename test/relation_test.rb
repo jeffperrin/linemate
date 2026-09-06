@@ -242,3 +242,68 @@ class RelationEdgeCasesTest < Minitest::Test
     assert_equal ["a"], Note.where(id: ...2).pluck(:body)
   end
 end
+
+class RelationScopeTest < Minitest::Test
+  class Team < Linemate::Model
+    col :id, Int
+    col :name, String
+    col :city, String
+    col :active, Boolean, default: true
+
+    def self.active
+      where(active: true)
+    end
+
+    def self.in(city)
+      where(city: city)
+    end
+
+    def self.roster_size
+      count
+    end
+  end
+
+  def setup
+    Linemate.connect(":memory:")
+    Team.create_table
+    Team.create(name: "Leafs", city: "Toronto")
+    Team.create(name: "Marlies", city: "Toronto", active: false)
+    Team.create(name: "Bruins", city: "Boston")
+  end
+
+  def teardown
+    Linemate.disconnect
+  end
+
+  def test_class_scopes_chain_off_relations
+    assert_equal ["Leafs"], Team.in("Toronto").active.pluck(:name)
+    assert_equal ["Leafs"], Team.active.in("Toronto").pluck(:name)
+    assert_equal ["Leafs"], Team.where(city: "Toronto").active.order(:name).pluck(:name)
+    assert_equal 2, Team.where(city: "Toronto").roster_size
+  end
+
+  def test_scope_is_restored_after_the_call
+    Team.where(city: "Toronto").active
+    assert_equal 3, Team.count
+    assert_nil Team.current_scope
+  end
+
+  def test_scope_is_restored_when_the_scope_raises
+    assert_raises(Linemate::UnknownColumn) { Team.where(city: "Toronto").where(nope: 1) }
+    assert_nil Team.current_scope
+    assert_equal 3, Team.count
+  end
+
+  def test_respond_to_and_unknown_methods
+    assert_respond_to Team.all, :active
+    refute_respond_to Team.all, :nonsense
+    assert_raises(NoMethodError) { Team.all.nonsense }
+  end
+
+  def test_enumerable_find_and_select_with_blocks
+    assert_equal "Marlies", Team.all.find { |t| !t.active }.name
+    assert_equal ["Leafs", "Bruins"], Team.order(:id).select(&:active).map(&:name)
+    assert_equal ["Leafs"], Team.in("Toronto").select { |t| t.active }.map(&:name)
+    assert_equal "Leafs", Team.find(1).name
+  end
+end
