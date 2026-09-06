@@ -16,9 +16,13 @@ module Linemate
       raise Error, "cannot save a destroyed #{self.class}" if destroyed?
 
       check_required_attributes
-      new_record? ? insert_row : update_row
-      changes_applied
-      true
+      event = new_record? ? :create : :update
+      run_callbacks(:save) do
+        run_callbacks(event) do
+          (event == :create) ? insert_row : update_row
+          changes_applied
+        end || throw(:abort)
+      end
     end
 
     def update(attributes)
@@ -32,11 +36,10 @@ module Linemate
     end
 
     def destroy
-      if persisted?
-        connection.execute(%(DELETE FROM #{quoted_table} WHERE #{quoted(primary_key)} = ?), [id])
-      end
-      @destroyed = true
-      self
+      run_callbacks(:destroy) do
+        connection.execute(%(DELETE FROM #{quoted_table} WHERE #{quoted(primary_key)} = ?), [id]) if persisted?
+        @destroyed = true
+      end && self
     end
 
     def destroyed?

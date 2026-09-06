@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Dirty tracking: `changed?`, `changes`, `saved_changes`, `name_changed?`, `name_was`; updates write only changed columns.
+- Callbacks: before/after save, create, update and destroy; `throw :abort` halts.
+
 - Connection layer: global configuration, one SQLite handle per thread, reopened after fork, with WAL, busy timeout and foreign keys enabled.
 - `Linemate::Model` with `col` declarations, `table` override and a hand-rolled inflector.
 - Column types `Int`, `Float`, `String`, `Boolean`, `Date`, `DateTime`, `Blob`, `JSON`; custom types via `cast`/`serialize`/`deserialize`/`sql_type`.

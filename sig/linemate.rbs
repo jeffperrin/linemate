@@ -120,6 +120,15 @@ module Linemate
     def self.exists?: () -> bool
     def self.count: () -> Integer
     def self.pluck: (*Symbol | String) -> Array[untyped]
+    def self.create: (?Hash[Symbol | String, untyped]) -> instance
+    def self.before_save: (?Symbol) ?{ () -> void } -> void
+    def self.after_save: (?Symbol) ?{ () -> void } -> void
+    def self.before_create: (?Symbol) ?{ () -> void } -> void
+    def self.after_create: (?Symbol) ?{ () -> void } -> void
+    def self.before_update: (?Symbol) ?{ () -> void } -> void
+    def self.after_update: (?Symbol) ?{ () -> void } -> void
+    def self.before_destroy: (?Symbol) ?{ () -> void } -> void
+    def self.after_destroy: (?Symbol) ?{ () -> void } -> void
     def self.instantiate: (Hash[String | Symbol, untyped] row) -> instance
     def self.connection: () -> Connection
 
@@ -134,5 +143,16 @@ module Linemate
     def persisted?: () -> bool
     def new_record?: () -> bool
     def reload_associations: () -> self
+    def save: () -> bool
+    def update: (Hash[Symbol | String, untyped]) -> bool
+    def destroy: () -> (self | false)
+    def destroyed?: () -> bool
+    def reload: () -> self
+    def changes: () -> Hash[Symbol, [untyped, untyped]]
+    def changed: () -> Array[Symbol]
+    def changed?: () -> bool
+    def attribute_changed?: (Symbol | String) -> bool
+    def attribute_was: (Symbol | String) -> untyped
+    def saved_changes: () -> Hash[Symbol, [untyped, untyped]]
   end
 end

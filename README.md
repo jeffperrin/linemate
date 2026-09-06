@@ -10,11 +10,11 @@ Linemate follows the [Active Record pattern](https://martinfowler.com/eaaCatalog
 - `col` declarations with typed attributes: `Int`, `Float`, `String`, `Boolean`, `Date`, `DateTime`, `Blob`, `JSON`, plus your own types.
 - Lazy, chainable, immutable relations: `where`, `where.not`, `order`, `limit`, `offset`, `select`, `find`, `find_by`, `first`, `last`, `count`, `pluck`, `sum`, `minimum`, `maximum`, `exists?`.
 - Read-only associations: `belongs_to`, `has_many`, `has_one`.
-- Persistence: `save`, `create`, `update`, `destroy`, `reload`.
+- Persistence: `save`, `create`, `update`, `destroy`, `reload`, with dirty tracking and callbacks.
 - `create_table` generated from the model's declarations, foreign keys included.
 - Every value is a bound parameter. Nothing is interpolated into SQL.
 
-Not yet: validations, callbacks, dirty tracking, preloading. See [PLAN.md](PLAN.md).
+Not yet: validations. Preloading is deliberately out of scope: with an in-process database the extra queries cost a function call each, not a network round trip.
 
 ## Installation
 
@@ -145,7 +145,37 @@ team.reload                           # re-read from the database
 team.destroy                          # DELETE; team.destroyed? is true
 ```
 
-A `null: false` column that is still nil when you save raises `Linemate::NotNullViolation` before any SQL runs. There are no validations or callbacks yet.
+A `null: false` column that is still nil when you save raises `Linemate::NotNullViolation` before any SQL runs. There are no validations yet.
+
+### Dirty tracking
+
+```ruby
+team = Team.find(1)
+team.name = "Maple Leafs"
+team.changed?            # => true
+team.changes             # => {name: ["Leafs", "Maple Leafs"]}
+team.name_was            # => "Leafs"
+team.save
+team.saved_changes       # => {name: ["Leafs", "Maple Leafs"]}
+```
+
+`save` on a persisted record writes only the changed columns and runs no SQL when nothing changed.
+
+### Callbacks
+
+```ruby
+class Team < Linemate::Model
+  before_save :slugify
+  after_create { puts "welcome, #{name}" }
+  before_destroy { throw :abort if players.exists? }
+
+  def slugify
+    self.slug = name.downcase.tr(" ", "-")
+  end
+end
+```
+
+Available: `before_save`, `after_save`, `before_create`, `after_create`, `before_update`, `after_update`, `before_destroy`, `after_destroy`. Each takes a method name or a block. `throw :abort` in a before callback halts the operation; `save` and `destroy` then return false. Order on save is `before_save`, `before_create` or `before_update`, the SQL, then the matching after callbacks.
 
 ### Creating tables
 

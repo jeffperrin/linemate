@@ -7,6 +7,7 @@ require_relative "attributes"
 require_relative "dirty"
 require_relative "querying"
 require_relative "associations"
+require_relative "callbacks"
 require_relative "persistence"
 require_relative "schema"
 
@@ -16,6 +17,7 @@ module Linemate
     include Attributes
     include Dirty
     include Associations
+    include Callbacks
     include Persistence
     extend Querying
     extend Schema
@@ -65,6 +67,7 @@ module Linemate
         super
         subclass.instance_variable_set(:@columns_hash, columns_hash.dup)
         subclass.instance_variable_set(:@reflections, reflections.dup)
+        callbacks.each { |event, list| subclass.callbacks[event] = list.dup }
       end
     end
   end
