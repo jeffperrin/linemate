@@ -93,3 +93,13 @@ class ModelTest < Minitest::Test
     assert_equal "#<Column number Int primary>", Player.column(:number).inspect
   end
 end
+
+class ColumnInspectTest < Minitest::Test
+  def test_default_and_unnamed_type
+    column = Linemate::Column.new(:n, Linemate::Types::Int, default: 3)
+    assert_equal "#<Column n Int default=3>", column.inspect
+
+    custom = Struct.new(:sql_type).new("TEXT")
+    assert_equal "#<Column n #{custom.inspect}>", Linemate::Column.new(:n, custom).inspect
+  end
+end

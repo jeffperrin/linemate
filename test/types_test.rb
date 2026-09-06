@@ -93,3 +93,38 @@ class TypesTest < Minitest::Test
     assert_same T::Boolean, klass.column(:ok).type
   end
 end
+
+class TypeEdgeCasesTest < Minitest::Test
+  T = Linemate::Types
+
+  def test_int_casts_false
+    assert_equal 0, T::Int.cast(false)
+  end
+
+  def test_float_rejects_and_deserializes_nil
+    assert_raises(TypeError) { T::Float.cast(Object.new) }
+    assert_nil T::Float.deserialize(nil)
+    assert_equal 1.5, T::Float.deserialize(1.5)
+  end
+
+  def test_date_from_datetime_and_rejects_others
+    assert_equal ::Date.new(2000, 1, 2), T::Date.cast(::DateTime.new(2000, 1, 2, 5))
+    assert_raises(TypeError) { T::Date.cast(42) }
+  end
+
+  def test_datetime_from_datetime_and_rejects_others
+    assert_equal Time.utc(2000, 1, 2, 5), T::DateTime.cast(::DateTime.new(2000, 1, 2, 5))
+    assert_raises(TypeError) { T::DateTime.cast(42) }
+  end
+
+  def test_blob_rejects_non_strings_and_deserializes
+    assert_raises(TypeError) { T::Blob.cast(1) }
+    assert_nil T::Blob.deserialize(nil)
+    assert_equal "\xFF".b, T::Blob.deserialize("\xFF")
+    assert_equal Encoding::BINARY, T::Blob.deserialize("x").encoding
+  end
+
+  def test_json_deserializes_nil
+    assert_nil T::JSON.deserialize(nil)
+  end
+end

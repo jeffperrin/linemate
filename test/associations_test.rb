@@ -167,3 +167,58 @@ class AssociationsTest < Minitest::Test
       Team.reflect_on_association(:players).inspect
   end
 end
+
+class AssociationEdgeCasesTest < Minitest::Test
+  class Arena < Linemate::Model
+    col :id, Int
+    col :name, String
+    col :code, String
+    has_many :events, "AssociationEdgeCasesTest::Event", primary_key: :code, foreign_key: :arena_code
+  end
+
+  class Event < Linemate::Model
+    col :id, Int
+    col :arena_code, String
+    col :arena_id, Int, null: true
+    belongs_to "AssociationEdgeCasesTest::Arena"
+  end
+
+  def setup
+    Linemate.connect(":memory:")
+    Arena.create_table
+    Event.create_table
+    Linemate.connection.execute("INSERT INTO arenas (id, name, code) VALUES (1, 'SBA', 'TOR')")
+    Linemate.connection.execute("INSERT INTO events (arena_code, arena_id) VALUES ('TOR', 1), ('BOS', NULL)")
+  end
+
+  def teardown
+    Linemate.disconnect
+  end
+
+  def test_string_target_for_belongs_to
+    reflection = Event.reflect_on_association(:arena)
+    assert_equal "AssociationEdgeCasesTest::Arena", reflection.target_name
+    assert_equal "SBA", Event.find(1).arena.name
+  end
+
+  def test_class_target_name
+    assert_equal "AssociationEdgeCasesTest::Event", Arena.reflect_on_association(:events).target_name
+    assert_equal "AssociationsTest::Team", AssociationsTest::Player.reflect_on_association(:team).target_name
+  end
+
+  def test_explicit_primary_key
+    reflection = Arena.reflect_on_association(:events)
+    assert_equal :code, reflection.primary_key
+    assert_equal [1], Arena.find(1).events.pluck(:id)
+  end
+
+  def test_anonymous_owner_needs_foreign_key
+    err = assert_raises(Linemate::AssociationError) do
+      Class.new(Linemate::Model) do
+        col :id, Linemate::Types::Int
+        has_many :events, "AssociationEdgeCasesTest::Event"
+      end
+    end
+    assert_match(/foreign_key/, err.message)
+  end
+end

@@ -92,3 +92,31 @@ class AttributesTest < Minitest::Test
     assert_equal "A", p.name
   end
 end
+
+class AttributeEdgeCasesTest < Minitest::Test
+  class Stamp < Linemate::Model
+    col :id, Int
+    col :at, DateTime, default: -> { Time.utc(2001, 2, 3) }
+  end
+
+  def test_attribute_names
+    assert_equal %i[id at], Stamp.new.attribute_names
+  end
+
+  def test_callable_default
+    assert_equal Time.utc(2001, 2, 3), Stamp.new.at
+  end
+
+  def test_new_records_hash_by_identity
+    a = Stamp.new
+    b = Stamp.new
+    refute_equal a.hash, b.hash
+    assert_equal a.hash, a.hash
+  end
+
+  def test_instantiate_accepts_symbol_keys
+    stamp = Stamp.instantiate(id: 5, at: "2001-02-03T00:00:00.000000Z")
+    assert_equal 5, stamp.id
+    assert_equal Time.utc(2001, 2, 3), stamp.at
+  end
+end
