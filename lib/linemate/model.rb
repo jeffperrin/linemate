@@ -7,6 +7,7 @@ require_relative "attributes"
 require_relative "querying"
 require_relative "associations"
 require_relative "persistence"
+require_relative "schema"
 
 module Linemate
   # Base class for mapped records. Subclasses declare their columns with
@@ -17,6 +18,7 @@ module Linemate
     include Associations
     include Persistence
     extend Querying
+    extend Schema
 
     class << self
       # Returns or sets the table name. Defaults to the pluralised,
