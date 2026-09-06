@@ -32,8 +32,8 @@ class SQLBuilderTest < Minitest::Test
 
   def test_offset_without_limit
     sql, binds = B.new(table: "t", offset: 3).select_sql
-    assert_equal 'SELECT * FROM "t" LIMIT -1 OFFSET ?', sql
-    assert_equal [3], binds
+    assert_equal 'SELECT * FROM "t" LIMIT ? OFFSET ?', sql
+    assert_equal [-1, 3], binds
   end
 
   def test_aggregate_wraps_select

@@ -3,8 +3,6 @@
 require "sqlite3"
 
 module Linemate
-  # Thin wrapper around a single SQLite3::Database handle. One instance is
-  # owned by exactly one thread; see Linemate.connection.
   class Connection
     attr_reader :database, :pid
 
@@ -28,7 +26,6 @@ module Linemate
       @database.execute(sql, binds).first
     end
 
-    # Rows as arrays rather than hashes, for pluck and friends.
     def select_rows(sql, binds = [])
       @database.results_as_hash = false
       @database.execute(sql, binds)

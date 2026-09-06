@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module Linemate
-  # A deliberately small inflector. Covers the common English cases needed
-  # for table and association naming without pulling in ActiveSupport.
   module Inflector
     IRREGULARS = {
       "person" => "people",
@@ -73,7 +71,6 @@ module Linemate
       word
     end
 
-    # "HomeGame" => "home_game", "Linemate::Team" => "team"
     def underscore(word)
       word.to_s
         .split("::").last
@@ -83,12 +80,10 @@ module Linemate
         .downcase
     end
 
-    # "home_game" => "HomeGame"
     def camelize(word)
       word.to_s.split("_").map(&:capitalize).join
     end
 
-    # "HomeGame" => "home_games"
     def tableize(class_name)
       pluralize(underscore(class_name))
     end

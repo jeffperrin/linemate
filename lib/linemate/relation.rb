@@ -3,12 +3,9 @@
 require_relative "sql_builder"
 
 module Linemate
-  # A lazy, immutable, chainable query. Every chain method returns a new
-  # Relation; nothing hits the database until a terminal method runs.
   class Relation
     include Enumerable
 
-    # Returned by +where+ with no arguments so that +where.not(...)+ works.
     class WhereChain
       def initialize(relation)
         @relation = relation
@@ -32,21 +29,12 @@ module Linemate
       @records = nil
     end
 
-    # -- chaining -----------------------------------------------------------
-
-    # where(name: "Leafs")            => "name" = ?
-    # where(id: [1, 2])               => "id" IN (?, ?)
-    # where(captain_id: nil)          => "captain_id" IS NULL
-    # where(goals: 10..20)            => "goals" BETWEEN ? AND ?
-    # where("goals > ?", 20)          => raw fragment with binds
-    # where.not(position: "G")        => NOT ("position" = ?)
     def where(conditions = nil, *binds)
       return WhereChain.new(self) if conditions.nil?
 
       spawn(where: where_clauses + [build_where(conditions, binds)])
     end
 
-    # order(:goals) / order(goals: :desc) / order("RANDOM()")
     def order(*args)
       spawn(order: order_clauses + build_order(args))
     end
@@ -67,7 +55,6 @@ module Linemate
       spawn(select: select_values + columns.map { |c| column_or_raw(c) })
     end
 
-    # unscope(:where, :order, :limit, :offset, :select)
     def unscope(*parts)
       changes = {}
       parts.each do |part|
@@ -95,8 +82,6 @@ module Linemate
       end
       spawn(order: reversed)
     end
-
-    # -- terminals ----------------------------------------------------------
 
     def to_a
       @records ||= connection.select_all(*sql).map { |row| model.instantiate(row) }
@@ -165,7 +150,6 @@ module Linemate
       deserialize(column, connection.select_value(*aggregate("MAX(#{column_or_raw(column)})")))
     end
 
-    # pluck(:name) => ["a", "b"]; pluck(:id, :name) => [[1, "a"], [2, "b"]]
     def pluck(*columns)
       rows = connection.select_rows(*unscope(:select).spawn(select: columns.map { |c| column_or_raw(c) }).sql)
       rows = rows.map do |row|
@@ -174,9 +158,6 @@ module Linemate
       (columns.size == 1) ? rows.map(&:first) : rows
     end
 
-    # -- sql ----------------------------------------------------------------
-
-    # => [sql, binds]
     def sql
       builder.select_sql
     end
@@ -236,7 +217,6 @@ module Linemate
 
     def quote(name) = SQLBuilder.quote_identifier(name)
 
-    # Symbols must be declared columns; strings pass through as raw SQL.
     def column_or_raw(value)
       case value
       when ::Symbol then quote(model.column(value).name)

@@ -1,17 +1,11 @@
 # frozen_string_literal: true
 
 module Linemate
-  # Turns the pieces of a Relation into SQL text plus an array of binds.
-  # Pure: no database access, no knowledge of models. Identifiers are
-  # double-quoted; values are never interpolated.
   class SQLBuilder
     def self.quote_identifier(name)
       %("#{name.to_s.gsub('"', '""')}")
     end
 
-    # where:  array of [sql_fragment, binds]
-    # order:  array of sql fragments
-    # select: array of sql fragments (empty means *)
     def initialize(table:, select: [], where: [], order: [], limit: nil, offset: nil)
       @table = table
       @select = select
@@ -21,7 +15,6 @@ module Linemate
       @offset = offset
     end
 
-    # => [sql, binds]
     def select_sql
       binds = []
       sql = "SELECT #{select_list} FROM #{quote(@table)}"
@@ -32,12 +25,10 @@ module Linemate
         }.join(" AND ")
       end
       sql << " ORDER BY " << @order.join(", ") unless @order.empty?
-      if @limit
+      limit = @limit || (-1 if @offset)
+      if limit
         sql << " LIMIT ?"
-        binds << @limit
-      elsif @offset
-        # SQLite requires LIMIT before OFFSET; -1 means no limit.
-        sql << " LIMIT -1"
+        binds << limit
       end
       if @offset
         sql << " OFFSET ?"
@@ -46,8 +37,6 @@ module Linemate
       [sql, binds]
     end
 
-    # An aggregate over the full relation, limit and offset included, by
-    # wrapping the select in a subquery. => [sql, binds]
     def aggregate_sql(expression)
       inner, binds = select_sql
       ["SELECT #{expression} FROM (#{inner}) AS #{quote("subquery")}", binds]

@@ -31,8 +31,6 @@ class RelationTest < Minitest::Test
     Linemate.disconnect
   end
 
-  # -- laziness and immutability --
-
   def test_all_is_lazy_and_chaining_returns_new_relations
     rel = Player.all
     refute rel.loaded?
@@ -52,8 +50,6 @@ class RelationTest < Minitest::Test
     assert_equal 2, rel.to_a.size
     assert_equal 1, rel.reload.to_a.size
   end
-
-  # -- where --
 
   def test_where_hash_equality_casts_values
     assert_equal %w[Gretzky Hasek Crosby], Player.where(active: "t").pluck(:name)
@@ -90,8 +86,6 @@ class RelationTest < Minitest::Test
     assert_raises(ArgumentError) { Player.where(42) }
   end
 
-  # -- order, limit, offset --
-
   def test_order_forms
     assert_equal %w[Gretzky Howe Orr Crosby Hasek], Player.order(goals: :desc).pluck(:name)
     assert_equal %w[Crosby Gretzky Hasek Howe Orr], Player.order(:name).pluck(:name)
@@ -120,8 +114,6 @@ class RelationTest < Minitest::Test
     assert_nil p.goals
     assert_nil p.position
   end
-
-  # -- terminals --
 
   def test_first_and_last_default_to_primary_key_order
     assert_equal "Gretzky", Player.first.name

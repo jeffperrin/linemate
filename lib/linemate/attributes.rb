@@ -1,13 +1,8 @@
 # frozen_string_literal: true
 
 module Linemate
-  # Instance-side attribute storage, casting and the accessor methods that
-  # +col+ defines. Included in Model.
   module Attributes
     module ClassMethods
-      # Builds a record from a database row (string or symbol keys). Values
-      # pass through each type's +deserialize+; keys that are not declared
-      # columns are ignored.
       def instantiate(row)
         record = allocate
         record.send(:init_from_row, row)
@@ -16,14 +11,13 @@ module Linemate
 
       private
 
-      # Accessors live in a module so a model can override one and call super.
-      def attribute_methods_module
-        @attribute_methods_module ||= Module.new.tap { |m| include m }
+      def overridable_methods
+        @overridable_methods ||= Module.new.tap { |m| include m }
       end
 
       def define_attribute_methods(column)
         name = column.name
-        attribute_methods_module.module_eval do
+        overridable_methods.module_eval do
           define_method(name) { read_attribute(name) }
           define_method(:"#{name}=") { |value| write_attribute(name, value) }
         end

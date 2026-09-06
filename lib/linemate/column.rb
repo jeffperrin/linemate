@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module Linemate
-  # One declared attribute of a model. Holds enough to both map a row and,
-  # later, generate a CREATE TABLE statement.
   class Column
     attr_reader :name, :type, :default
 
