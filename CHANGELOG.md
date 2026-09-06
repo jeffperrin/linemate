@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Instrumentation: `Linemate.subscribe`, `Linemate.unsubscribe`, `Linemate.logger=`; every SQL statement publishes an event with sql, binds, duration and error.
+
 - Dirty tracking: `changed?`, `changes`, `saved_changes`, `name_changed?`, `name_was`; updates write only changed columns.
 - Callbacks: before/after save, create, update and destroy; `throw :abort` halts.
 - Class-level scopes chain off relations: `Team.where(...).active`.

@@ -12,6 +12,7 @@ Linemate follows the [Active Record pattern](https://martinfowler.com/eaaCatalog
 - Read-only associations: `belongs_to`, `has_many`, `has_one`.
 - Persistence: `save`, `create`, `update`, `destroy`, `reload`, with dirty tracking and callbacks.
 - `create_table` generated from the model's declarations, foreign keys included.
+- Instrumentation: subscribe to every SQL statement, or plug in a `Logger`.
 - Every value is a bound parameter. Nothing is interpolated into SQL.
 
 Not yet: validations. Preloading is deliberately out of scope: with an in-process database the extra queries cost a function call each, not a network round trip.
@@ -204,6 +205,21 @@ puts Team.create_table_sql
 ```
 
 The generated DDL uses each column's SQLite type, `NOT NULL` unless `null: true`, the serialized default, and a `FOREIGN KEY` for every `belongs_to`. Create parent tables before children.
+
+### Instrumentation
+
+Every SQL statement publishes an event. Subscribe to log, time or count queries:
+
+```ruby
+Linemate.subscribe(:sql) do |event|
+  puts "#{event.duration_ms}ms #{event.sql} #{event.binds.inspect}"
+  puts event.error.message if event.error
+end
+
+Linemate.logger = Logger.new($stdout)   # shortcut: statements at debug, failures at error
+```
+
+`subscribe` returns a subscription for `Linemate.unsubscribe`. Omit the name to receive every event. Subscribers run on the thread that ran the statement, after it completes and before any error is re-raised.
 
 ### Introspection
 
