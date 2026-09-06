@@ -17,6 +17,7 @@ module Linemate
 
       check_required_attributes
       new_record? ? insert_row : update_row
+      changes_applied
       true
     end
 
@@ -62,7 +63,9 @@ module Linemate
     end
 
     def update_row
-      columns = self.class.columns.reject { |c| c.name == primary_key }
+      columns = changed.map { |name| self.class.column(name) }
+      return if columns.empty?
+
       assignments = columns.map { |c| "#{quoted(c.name)} = ?" }.join(", ")
       connection.execute(%(UPDATE #{quoted_table} SET #{assignments} WHERE #{quoted(primary_key)} = ?), columns.map { |c| serialized(c) } + [id])
     end

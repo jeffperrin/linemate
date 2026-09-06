@@ -20,6 +20,8 @@ module Linemate
         overridable_methods.module_eval do
           define_method(name) { read_attribute(name) }
           define_method(:"#{name}=") { |value| write_attribute(name, value) }
+          define_method(:"#{name}_changed?") { attribute_changed?(name) }
+          define_method(:"#{name}_was") { attribute_was(name) }
         end
       end
     end
@@ -36,6 +38,7 @@ module Linemate
         default = default.call if default.respond_to?(:call)
         @attributes[column.name] = default.nil? ? nil : column.type.cast(default)
       end
+      clear_changes
       attributes.each { |name, value| write_attribute(name, value) }
     end
 
@@ -104,6 +107,7 @@ module Linemate
         raw = row.key?(column.name) ? row[column.name] : row[column.name.to_s]
         @attributes[column.name] = column.type.deserialize(raw)
       end
+      clear_changes
     end
   end
 end

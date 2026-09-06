@@ -4,6 +4,7 @@ require_relative "inflector"
 require_relative "column"
 require_relative "types"
 require_relative "attributes"
+require_relative "dirty"
 require_relative "querying"
 require_relative "associations"
 require_relative "persistence"
@@ -13,6 +14,7 @@ module Linemate
   class Model
     include Types
     include Attributes
+    include Dirty
     include Associations
     include Persistence
     extend Querying
