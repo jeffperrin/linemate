@@ -2,6 +2,8 @@
 
 - Dirty tracking: `changed?`, `changes`, `saved_changes`, `name_changed?`, `name_was`; updates write only changed columns.
 - Callbacks: before/after save, create, update and destroy; `throw :abort` halts.
+- Class-level scopes chain off relations: `Team.where(...).active`.
+- `Relation#find` and `Relation#select` with a block behave like Enumerable.
 
 - Connection layer: global configuration, one SQLite handle per thread, reopened after fork, with WAL, busy timeout and foreign keys enabled.
 - `Linemate::Model` with `col` declarations, `table` override and a hand-rolled inflector.

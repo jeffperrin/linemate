@@ -68,7 +68,7 @@ module Linemate
     def reverse_order: () -> Relation[Record]
     def limit: (Integer?) -> Relation[Record]
     def offset: (Integer?) -> Relation[Record]
-    def select: (*Symbol | String) -> Relation[Record]
+    def select: (*Symbol | String) ?{ (Record) -> boolish } -> (Relation[Record] | Array[Record])
     def unscope: (*Symbol) -> Relation[Record]
 
     def to_a: () -> Array[Record]
@@ -77,7 +77,7 @@ module Linemate
     def reload: () -> self
     def first: (?Integer?) -> (Record | Array[Record] | nil)
     def last: (?Integer?) -> (Record | Array[Record] | nil)
-    def find: (untyped id) -> Record
+    def find: (?untyped id) ?{ (Record) -> boolish } -> Record?
     def find_by: (Hash[Symbol, untyped] | String conditions, *untyped binds) -> Record?
     def exists?: () -> bool
     def empty?: () -> bool

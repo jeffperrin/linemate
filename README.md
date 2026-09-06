@@ -119,6 +119,22 @@ Player.maximum(:born_on)              # => Date
 
 Hash conditions are cast through the column's type before binding, so `where(active: true)` binds `1` and `where(born_on: Date.new(2000, 1, 1))` binds ISO 8601 text. SQL fragments take positional `?` binds and pass their values through untouched.
 
+### Scopes
+
+Any class method that returns a relation works as a scope and chains off other relations:
+
+```ruby
+class Team < Linemate::Model
+  def self.active = where(active: true)
+  def self.in(city) = where(city: city)
+end
+
+Team.in("Toronto").active
+Team.where(division_id: 1).active.order(:name)
+```
+
+Relations also keep the block forms of `find` and `select` from Enumerable: `Team.all.find { |t| t.name.start_with?("M") }` and `Team.all.select(&:active)` operate on the loaded records.
+
 ### Associations
 
 ```ruby
