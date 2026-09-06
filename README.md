@@ -10,9 +10,11 @@ Linemate follows the [Active Record pattern](https://martinfowler.com/eaaCatalog
 - `col` declarations with typed attributes: `Int`, `Float`, `String`, `Boolean`, `Date`, `DateTime`, `Blob`, `JSON`, plus your own types.
 - Lazy, chainable, immutable relations: `where`, `where.not`, `order`, `limit`, `offset`, `select`, `find`, `find_by`, `first`, `last`, `count`, `pluck`, `sum`, `minimum`, `maximum`, `exists?`.
 - Read-only associations: `belongs_to`, `has_many`, `has_one`.
+- Persistence: `save`, `create`, `update`, `destroy`, `reload`.
+- `create_table` generated from the model's declarations, foreign keys included.
 - Every value is a bound parameter. Nothing is interpolated into SQL.
 
-Not yet: saving records, validations, callbacks, schema generation, preloading. See [PLAN.md](PLAN.md).
+Not yet: validations, callbacks, dirty tracking, preloading. See [PLAN.md](PLAN.md).
 
 ## Installation
 
@@ -130,6 +132,32 @@ Game.find(3).home_team
 `belongs_to` infers the reader name and foreign key from the target class (`belongs_to League` gives `league` and `league_id`). The foreign key column must be declared with `col` before the association or the class raises when it loads. `has_many` and `has_one` take the reader name first and the target second. The target may be a class or a string; a string is resolved on first use, which lets you reference a class defined later in the file.
 
 `Model.reflections` and `Model.reflect_on_association(:players)` expose the metadata.
+
+### Saving
+
+```ruby
+team = Team.new(name: "Leafs", city: "Toronto", division_id: 1, league_id: 1)
+team.save                             # INSERT; team.id is now set
+Team.create(name: "Bruins", city: "Boston", division_id: 1, league_id: 1)
+
+team.update(active: false)            # assign and UPDATE
+team.reload                           # re-read from the database
+team.destroy                          # DELETE; team.destroyed? is true
+```
+
+A `null: false` column that is still nil when you save raises `Linemate::NotNullViolation` before any SQL runs. There are no validations or callbacks yet.
+
+### Creating tables
+
+```ruby
+League.create_table
+Team.create_table(if_not_exists: true)
+Team.table_exists?
+Team.drop_table
+puts Team.create_table_sql
+```
+
+The generated DDL uses each column's SQLite type, `NOT NULL` unless `null: true`, the serialized default, and a `FOREIGN KEY` for every `belongs_to`. Create parent tables before children.
 
 ### Introspection
 
